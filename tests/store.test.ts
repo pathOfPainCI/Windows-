@@ -91,11 +91,52 @@ describe('settings', () => {
   })
 })
 
+describe('images', () => {
+  it('saveImage 生成文件且 loadImage 往返一致', async () => {
+    const buf = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+    const name = await store.saveImage(buf)
+    expect(name).toBeTruthy()
+    await expect(fs.stat(join(dir, 'images', name))).resolves.toBeTruthy()
+    const onDisk = await store.loadImage(name)
+    expect(onDisk.equals(buf)).toBe(true)
+  })
+
+  it('removeHistory 删除图片条目时删除对应文件', async () => {
+    const name = await store.saveImage(Buffer.from('fake-png'))
+    const list = await store.addHistory({ type: 'image', content: name, sourceApp: '' })
+    await store.removeHistory(list[0].id)
+    await expect(fs.access(join(dir, 'images', name))).rejects.toThrow()
+  })
+
+  it('clearHistory 清空后删除所有图片文件', async () => {
+    const name1 = await store.saveImage(Buffer.from('one'))
+    const name2 = await store.saveImage(Buffer.from('two'))
+    await store.addHistory({ type: 'image', content: name1, sourceApp: '' })
+    await store.addHistory({ type: 'image', content: name2, sourceApp: '' })
+    await store.clearHistory()
+    await expect(fs.access(join(dir, 'images', name1))).rejects.toThrow()
+    await expect(fs.access(join(dir, 'images', name2))).rejects.toThrow()
+  })
+})
+
 describe('corruption recovery', () => {
   it('损坏的 history.json 回退为空', async () => {
     await fs.writeFile(join(dir, 'history.json'), '{broken', 'utf-8')
     const s = new Store(dir)
     await s.init()
     expect(s.getHistory()).toEqual([])
+  })
+  it('损坏的 history.json 备份为 .bak 并回退为空', async () => {
+    await fs.writeFile(join(dir, 'history.json'), '{broken', 'utf-8')
+    const s = new Store(dir)
+    await s.init()
+    expect(s.getHistory()).toEqual([])
+    await expect(fs.access(join(dir, 'history.json.bak'))).resolves.toBeUndefined()
+  })
+  it('缺失 history.json 不备份', async () => {
+    const s = new Store(dir)
+    await s.init()
+    expect(s.getHistory()).toEqual([])
+    await expect(fs.access(join(dir, 'history.json.bak'))).rejects.toThrow()
   })
 })

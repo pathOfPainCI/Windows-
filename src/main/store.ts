@@ -174,8 +174,8 @@ export class Store {
   async deleteImage(filename: string): Promise<void> {
     try {
       await fs.unlink(join(this.baseDir, 'images', filename))
-    } catch {
-      /* 文件不存在可忽略 */
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
     }
   }
 }
