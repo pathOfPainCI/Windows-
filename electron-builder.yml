@@ -1,0 +1,8 @@
+appId: com.local.clipboard-tool
+productName: 剪贴板工具
+directories:
+  output: dist
+files:
+  - out/**
+win:
+  target: nsis
