@@ -33,26 +33,31 @@ export class ClipboardService {
   }
 
   private async poll(): Promise<void> {
-    const text = clipboard.readText()
-    const img = clipboard.readImage()
+    try {
+      const text = clipboard.readText()
+      const img = clipboard.readImage()
 
-    if (!img.isEmpty()) {
-      const buf = img.toPNG()
-      const hash = hashBuffer(buf)
-      if (hash === this.lastHash) return
-      this.lastHash = hash
-      const filename = await this.store.saveImage(buf)
-      const entries = await this.store.addHistory({ type: 'image', content: filename, sourceApp: '' })
-      this.onChange?.(entries)
-      return
-    }
+      if (!img.isEmpty()) {
+        const buf = img.toPNG()
+        const hash = hashBuffer(buf)
+        if (hash === this.lastHash) return
+        this.lastHash = hash
+        const filename = await this.store.saveImage(buf)
+        const entries = await this.store.addHistory({ type: 'image', content: filename, sourceApp: '' })
+        this.onChange?.(entries)
+        return
+      }
 
-    if (text && text.trim() !== '') {
-      const hash = hashString(text)
-      if (hash === this.lastHash) return
-      this.lastHash = hash
-      const entries = await this.store.addHistory({ type: 'text', content: text, sourceApp: '' })
-      this.onChange?.(entries)
+      if (text && text.trim() !== '') {
+        const hash = hashString(text)
+        if (hash === this.lastHash) return
+        this.lastHash = hash
+        const entries = await this.store.addHistory({ type: 'text', content: text, sourceApp: '' })
+        this.onChange?.(entries)
+      }
+    } catch (err) {
+      this.lastHash = null
+      console.warn('[clipboard-service] poll error:', err)
     }
   }
 }
