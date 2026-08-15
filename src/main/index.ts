@@ -4,6 +4,7 @@ import { Store } from './store'
 import { ClipboardService } from './clipboard-service'
 import { PasteService } from './paste-service'
 import { createMainWindow } from './window'
+import { EdgeSnapManager } from './edge-snap'
 import { TrayManager } from './tray'
 import { registerHotkey, unregisterHotkey } from './global-shortcut'
 import { registerIpc } from './ipc'
@@ -18,7 +19,20 @@ app.whenReady().then(async () => {
 
   win = createMainWindow()
 
+  const edgeSnap = new EdgeSnapManager(win)
+  edgeSnap.start()
+
   // 无边框窗口拖拽：渲染层设置 -webkit-app-region: drag 的标题栏区域可拖动
+
+  const toggleWindow = (): void => {
+    if (!win || win.isDestroyed()) return
+    // 收起状态下先弹出，而不是直接隐藏
+    if (edgeSnap.isSnapped()) {
+      edgeSnap.restore()
+      return
+    }
+    win.isVisible() ? win.hide() : win.show()
+  }
 
   const clipboardService = new ClipboardService(store, (entries: HistoryEntry[]) => {
     if (win && !win.isDestroyed()) win.webContents.send('history-changed', entries)
@@ -29,11 +43,7 @@ app.whenReady().then(async () => {
   registerIpc(store, pasteService, win)
 
   const tray = new TrayManager(win, {
-    toggleWindow: () => {
-      if (win && !win.isDestroyed()) {
-        win.isVisible() ? win.hide() : win.show()
-      }
-    },
+    toggleWindow,
     setAlwaysOnTop: (v) => {
       win?.setAlwaysOnTop(v)
       void store.saveSettings({ ...store.getSettings(), alwaysOnTop: v })
@@ -42,11 +52,7 @@ app.whenReady().then(async () => {
   })
   tray.build()
 
-  registerHotkey(settings.hotkey, () => {
-    if (win && !win.isDestroyed()) {
-      win.isVisible() ? win.hide() : win.show()
-    }
-  })
+  registerHotkey(settings.hotkey, toggleWindow)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

@@ -28,6 +28,17 @@ html, body, #root { height: 100%; margin: 0; }
   user-select: none;
 }
 .body { flex: 1; display: flex; min-height: 0; }
+.drag-bar {
+  height: 18px; flex: none; position: relative;
+  -webkit-app-region: drag; cursor: grab;
+}
+.drag-bar::after {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px; height: 3px; border-radius: 2px;
+  background: var(--fg-dim); opacity: 0.45;
+  box-shadow: 0 -5px 0 var(--fg-dim), 0 5px 0 var(--fg-dim);
+}
 .titlebar { display: flex; gap: 8px; padding: 8px; align-items: center; -webkit-app-region: drag; }
 .titlebar .icon-btn, .titlebar input { -webkit-app-region: no-drag; }
 .searchbar { flex: 1; }

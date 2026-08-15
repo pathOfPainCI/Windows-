@@ -75,6 +75,7 @@ export default function App() {
 
   return (
     <div className={`app theme-${settings?.theme ?? 'dark'}`}>
+      <div className="drag-bar" />
       <div className="titlebar">
         <SearchBar value={query} onChange={setQuery} />
         <button className="icon-btn" onClick={() => setShowSettings((v) => !v)}>⚙</button>
