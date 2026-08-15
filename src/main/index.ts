@@ -18,6 +18,8 @@ app.whenReady().then(async () => {
 
   win = createMainWindow()
 
+  // 无边框窗口拖拽：渲染层设置 -webkit-app-region: drag 的标题栏区域可拖动
+
   const pasteService = new PasteService(store)
   const clipboardService = new ClipboardService(store, (entries: HistoryEntry[]) => {
     if (win && !win.isDestroyed()) win.webContents.send('history-changed', entries)

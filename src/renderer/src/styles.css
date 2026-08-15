@@ -28,7 +28,8 @@ html, body, #root { height: 100%; margin: 0; }
   user-select: none;
 }
 .body { flex: 1; display: flex; min-height: 0; }
-.titlebar { display: flex; gap: 8px; padding: 8px; align-items: center; }
+.titlebar { display: flex; gap: 8px; padding: 8px; align-items: center; -webkit-app-region: drag; }
+.titlebar .icon-btn, .titlebar input { -webkit-app-region: no-drag; }
 .searchbar { flex: 1; }
 .searchbar input {
   width: 100%; padding: 6px 10px; border-radius: 8px;
