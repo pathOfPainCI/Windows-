@@ -57,7 +57,7 @@ export default function App() {
     } else {
       setSnippets(await api.addSnippet({ group: s.group, title: s.title, content: s.content }))
     }
-    if (!groups.includes(s.group)) setGroups(await api.getGroups())
+    if (!groups.includes(s.group)) setGroups(await api.addGroup(s.group))
     setEditing(null)
   }
   async function handleDeleteSnippet(id: string): Promise<void> {

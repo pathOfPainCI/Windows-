@@ -4,10 +4,14 @@ import type { PasteResult } from '@shared/api'
 import type { Store } from './store'
 
 export class PasteService {
-  constructor(private store: Store) {}
+  constructor(
+    private store: Store,
+    private onClipboardWritten?: () => void
+  ) {}
 
   async pasteText(content: string): Promise<PasteResult> {
     clipboard.writeText(content)
+    this.onClipboardWritten?.()
     return this.inject()
   }
 
@@ -17,6 +21,7 @@ export class PasteService {
       const img = nativeImage.createFromBuffer(buf)
       if (img.isEmpty()) return { ok: false, copiedOnly: true }
       clipboard.writeImage(img)
+      this.onClipboardWritten?.()
       return this.inject()
     } catch {
       return { ok: false, copiedOnly: true }

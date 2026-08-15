@@ -70,8 +70,11 @@ export class Store {
       content: entry.content,
       sourceApp: entry.sourceApp
     }
-    this.history = evict(addEntry(this.history, full), this.settings.historyLimit)
+    const next = evict(addEntry(this.history, full), this.settings.historyLimit)
+    const evicted = this.history.filter((e) => !next.some((n) => n.id === e.id))
+    this.history = next
     await this.writeJson('history.json', this.history)
+    for (const e of evicted) if (e.type === 'image') await this.deleteImage(e.content)
     return this.history
   }
 

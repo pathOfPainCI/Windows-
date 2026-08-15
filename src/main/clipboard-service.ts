@@ -32,6 +32,17 @@ export class ClipboardService {
     }
   }
 
+  // 将当前剪贴板内容标记为「已见」，避免粘贴回写被下一次轮询重复计入历史
+  markAsSeen(): void {
+    const img = clipboard.readImage()
+    if (!img.isEmpty()) {
+      this.lastHash = hashBuffer(img.toPNG())
+      return
+    }
+    const text = clipboard.readText()
+    if (text && text.trim() !== '') this.lastHash = hashString(text)
+  }
+
   private async poll(): Promise<void> {
     try {
       const text = clipboard.readText()

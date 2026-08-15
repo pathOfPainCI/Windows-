@@ -117,6 +117,16 @@ describe('images', () => {
     await expect(fs.access(join(dir, 'images', name1))).rejects.toThrow()
     await expect(fs.access(join(dir, 'images', name2))).rejects.toThrow()
   })
+
+  it('evict 淘汰图片条目时删除对应文件', async () => {
+    await store.saveSettings({ ...DEFAULT_SETTINGS, historyLimit: 1 })
+    const name1 = await store.saveImage(Buffer.from('one'))
+    await store.addHistory({ type: 'image', content: name1, sourceApp: '' })
+    const name2 = await store.saveImage(Buffer.from('two'))
+    await store.addHistory({ type: 'image', content: name2, sourceApp: '' })
+    await expect(fs.access(join(dir, 'images', name1))).rejects.toThrow()
+    await expect(fs.access(join(dir, 'images', name2))).resolves.toBeUndefined()
+  })
 })
 
 describe('corruption recovery', () => {
